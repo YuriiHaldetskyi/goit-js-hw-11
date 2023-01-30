@@ -22,8 +22,8 @@ searchMore.addEventListener('click', onLoadMore);
 function onSubmit(e) {
   e.preventDefault();
   inputValue = input.value.trim();
+  clearMarkup();
   if (!inputValue) {
-    clearMarkup();
     return;
   }
   page = 1;
@@ -33,11 +33,14 @@ function onSubmit(e) {
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
-        clearMarkup();
         return;
       }
-      clearMarkup();
+
       markupGallery(data.hits);
+      if (data.totalHits <= 40) {
+        searchMore.hidden = true;
+        return;
+      }
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       gallerySimpleLightbox.refresh();
       searchMore.hidden = false;
@@ -99,7 +102,7 @@ function onLoadMore() {
   pixabayAPI(inputValue, page, perPage)
     .then(data => {
       markupGallery(data.hits);
-      let totalPages = data.totalHits / perPage;
+      let totalPages = Math.ceil(data.totalHits / perPage);
       gallerySimpleLightbox.refresh();
 
       if (page >= totalPages) {
